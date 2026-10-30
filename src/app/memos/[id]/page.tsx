@@ -1,18 +1,22 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { DetailScreen } from "@/components/DetailScreen";
-import { StoredMemoDetail } from "@/components/StoredMemoDetail";
-import { getMemo, memos } from "@/lib/memos";
-
-export function generateStaticParams() {
-  return memos.map((m) => ({ id: m.id }));
-}
+import { getMemo } from "@/lib/memo-db";
 
 async function MemoDetail({ params }: { params: PageProps<"/memos/[id]">["params"] }) {
   const { id } = await params;
-  const memo = getMemo(id);
-  // 예시 메모가 아니면 이 브라우저에 저장한 메모일 수 있다.
-  if (!memo) return <StoredMemoDetail id={id} />;
+  const memo = await getMemo(id);
 
+  if (!memo) {
+    return (
+      <div className="mx-auto flex h-dvh w-full max-w-md flex-col items-center justify-center gap-space-16 px-space-16">
+        <p className="text-body-md text-text-secondary">찾을 수 없는 메모예요.</p>
+        <Link href="/" className="text-label-md text-primary">
+          홈으로 가기
+        </Link>
+      </div>
+    );
+  }
   return <DetailScreen memo={memo} />;
 }
 

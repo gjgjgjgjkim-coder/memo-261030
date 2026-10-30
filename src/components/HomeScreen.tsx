@@ -6,17 +6,15 @@ import { CardHeader } from "./CardHeader";
 import { Chip } from "./Chip";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { NumberTicker } from "@/components/ui/number-ticker";
-import { useStoredMemos } from "@/lib/memo-store";
-import { categories as memoCategories, memos } from "@/lib/memos";
+import { categories as memoCategories, type Memo } from "@/lib/memos";
 import { MemoItem } from "./MemoItem";
 
 const categories = ["전체", ...memoCategories];
 
-export function HomeScreen() {
+export function HomeScreen({ memos }: { memos: Memo[] }) {
   const [category, setCategory] = useState("전체");
-  const stored = useStoredMemos();
 
-  const visible = [...stored, ...memos].filter(
+  const visible = memos.filter(
     (m) => m.inHome && (category === "전체" || m.category === category),
   );
   const pinned = visible.filter((m) => m.pinned);
@@ -32,7 +30,7 @@ export function HomeScreen() {
               오늘까지 메모를
               <br />
               <NumberTicker
-                value={128 + stored.length}
+                value={memos.length}
                 delay={0.3}
                 className="tracking-[inherit] text-primary dark:text-primary"
               />

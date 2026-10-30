@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { htmlToBlocks, writeBlocks } from "@/lib/editor-blocks";
-import { addMemo, clearDraft, useDraft, writeDraft, type Draft } from "@/lib/memo-store";
+import { createMemo } from "@/lib/actions";
+import { clearDraft, useDraft, writeDraft, type Draft } from "@/lib/memo-store";
 import { categories, type MemoLabel } from "@/lib/memos";
 import { ButtonIcon } from "./ButtonIcon";
 import { ButtonPrimary } from "./ButtonPrimary";
@@ -94,13 +95,13 @@ function WriteForm({ draft }: { draft: Draft | null }) {
     setBodyVersion((v) => v + 1);
   }
 
-  function save() {
+  async function save() {
     const trimmed = title.trim();
     if (!trimmed) {
       titleRef.current?.focus();
       return;
     }
-    addMemo({
+    await createMemo({
       title: trimmed,
       category,
       label,
