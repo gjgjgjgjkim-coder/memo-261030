@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*credential*)",
+      "Read(**/*credentials*)",
+      "Read(**/*secret*)",
+      "Read(**/*secrets*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Edit(**/*credential*)",
+      "Edit(**/*secret*)"
+    ]
+  }
+}

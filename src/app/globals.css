@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* 디자인 토큰: CLAUDE.md의 이름과 같은 이름으로 쓴다 (예: color/primary -> bg-primary) */
+@theme {
+  /* 토큰에 없는 기본 색·모서리는 쓰지 못하게 비운다 */
+  --color-*: initial;
+  --radius-*: initial;
+
+  /* 색 */
+  --color-primary: #3182f6;
+  --color-surface-page: #f2f4f6;
+  --color-surface-card: #ffffff;
+  --color-text-primary: #191f28;
+  --color-text-secondary: #4e5968;
+  --color-text-muted: #8b95a1;
+  --color-text-on-primary: #ffffff;
+  --color-border-default: #e5e8eb;
+  --color-label-blue: #3182f6;
+  --color-label-blue-soft: #e8f3ff;
+  --color-label-green: #12a150;
+  --color-label-green-soft: #e3f8ec;
+  --color-label-orange: #f76808;
+  --color-label-orange-soft: #fff1e5;
+  --color-label-pink: #e5397a;
+  --color-label-pink-soft: #ffeaf1;
+
+  /* 간격 (p-space-16, gap-space-8 ...) */
+  --spacing-space-4: 4px;
+  --spacing-space-8: 8px;
+  --spacing-space-12: 12px;
+  --spacing-space-16: 16px;
+  --spacing-space-20: 20px;
+  --spacing-space-24: 24px;
+  --spacing-space-34: 34px;
+  --spacing-space-48: 48px;
+  --spacing-space-64: 64px;
+
+  /* 모서리 (rounded-sm ... rounded-full) */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* 글꼴 */
+  --font-sans: var(--font-noto-sans-kr), sans-serif;
+
+  /* 텍스트 스타일 (text-heading-xl ...) */
+  --text-heading-xl: 28px;
+  --text-heading-xl--line-height: 38px;
+  --text-heading-xl--letter-spacing: -0.8px;
+  --text-heading-xl--font-weight: 700;
+  --text-heading-lg: 26px;
+  --text-heading-lg--line-height: 36px;
+  --text-heading-lg--letter-spacing: -0.8px;
+  --text-heading-lg--font-weight: 700;
+  --text-title-lg: 20px;
+  --text-title-lg--line-height: 28px;
+  --text-title-lg--letter-spacing: -0.4px;
+  --text-title-lg--font-weight: 700;
+  --text-title-md: 17px;
+  --text-title-md--line-height: 24px;
+  --text-title-md--letter-spacing: -0.3px;
+  --text-title-md--font-weight: 700;
+  --text-label-md: 15px;
+  --text-label-md--line-height: 22px;
+  --text-label-md--letter-spacing: -0.2px;
+  --text-label-md--font-weight: 700;
+  --text-body-md: 16px;
+  --text-body-md--line-height: 28px;
+  --text-body-md--letter-spacing: -0.2px;
+  --text-body-md--font-weight: 400;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--letter-spacing: -0.1px;
+  --text-body-sm--font-weight: 400;
+  --text-caption-md: 15px;
+  --text-caption-md--line-height: 22px;
+  --text-caption-md--letter-spacing: -0.2px;
+  --text-caption-md--font-weight: 500;
+  --text-caption-sm: 13px;
+  --text-caption-sm--line-height: 18px;
+  --text-caption-sm--letter-spacing: 0px;
+  --text-caption-sm--font-weight: 500;
+  --text-button-md: 17px;
+  --text-button-md--line-height: 24px;
+  --text-button-md--letter-spacing: -0.2px;
+  --text-button-md--font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #4d94ff;
+    --color-surface-page: #101014;
+    --color-surface-card: #1c1c22;
+    --color-text-primary: #f1f3f5;
+    --color-text-secondary: #b3bac2;
+    --color-text-muted: #6e7783;
+    --color-text-on-primary: #ffffff;
+    --color-border-default: #2a2a33;
+    --color-label-blue: #6aa6ff;
+    --color-label-blue-soft: #1d2a40;
+    --color-label-green: #3ccb7f;
+    --color-label-green-soft: #17302a;
+    --color-label-orange: #ff9446;
+    --color-label-orange-soft: #3a2817;
+    --color-label-pink: #ff6fa2;
+    --color-label-pink-soft: #3b1d2a;
+  }
+}
+
+body {
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}

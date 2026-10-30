@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lumo — 같은 그림 찾기</title>
+  <style>
+    :root {
+      --accent: #d9cec4;
+      --accent-ink: #2b2420;
+      --text: #1f1b18;
+      --muted: #6f665f;
+      --bg: #f6f4f0;
+      --card: #fbfaf7;
+      --line: #e5e0d8;
+      --wood-1: #9a6a43;
+      --wood-2: #6e4527;
+      --night-1: #1c1a19;
+      --night-2: #0b0a0a;
+      --serif: "Noto Serif KR", "Nanum Myeongjo", "Batang", "Georgia", "Times New Roman", serif;
+      --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      --gap: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 72px 20px 96px; text-align: center; }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 24px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font: 500 14px/1.4 var(--sans);
+      cursor: pointer;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .btn:hover { background: #e6ddd4; transform: translateY(-1px); }
+    .btn.ghost { background: transparent; border-color: var(--line); }
+    .btn.ghost:hover { background: var(--card); }
+    .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+
+    .levels { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
+
+    .status {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px 36px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 40px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .status b {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 20px;
+      color: var(--text);
+      margin-left: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Board */
+    .board {
+      --size: min(112px, calc((100vw - 40px - (var(--cols) - 1) * var(--gap)) / var(--cols)));
+      display: grid;
+      grid-template-columns: repeat(var(--cols), var(--size));
+      gap: var(--gap);
+      justify-content: center;
+    }
+    .card {
+      width: var(--size);
+      height: calc(var(--size) * 1.3);
+      perspective: 800px;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      border-radius: 14px;
+    }
+    .card:focus-visible { outline: 2px solid var(--wood-2); outline-offset: 3px; }
+    .inner {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .45s ease;
+    }
+    .card.flipped .inner, .card.matched .inner { transform: rotateY(180deg); }
+    .face {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .back {
+      color: rgba(255, 255, 255, .8);
+      font-family: var(--serif);
+      font-size: calc(var(--size) * .3);
+      background:
+        repeating-linear-gradient(98deg, rgba(255, 255, 255, .04) 0 2px, transparent 2px 10px),
+        linear-gradient(120deg, var(--wood-1) 0%, #8a5b37 45%, var(--wood-2) 100%);
+      box-shadow: 0 6px 16px rgba(60, 36, 18, .18);
+    }
+    .front {
+      transform: rotateY(180deg);
+      background: var(--card);
+      border: 1px solid var(--line);
+      font-size: calc(var(--size) * .42);
+      transition: opacity .3s ease, border-color .3s ease;
+    }
+    .card.matched { cursor: default; }
+    .card.matched .front { opacity: .55; border-color: var(--accent); border-width: 2px; }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      color: #fff;
+      text-align: center;
+      background:
+        radial-gradient(ellipse 60% 70% at 50% 45%, rgba(255, 255, 255, .09) 0%, rgba(255, 255, 255, 0) 70%),
+        linear-gradient(180deg, rgba(28, 26, 25, .96) 0%, rgba(11, 10, 10, .97) 100%);
+    }
+    .overlay.show { display: grid; }
+    .overlay .eyebrow { color: rgba(255, 255, 255, .7); }
+    .overlay h2 {
+      font-family: var(--serif);
+      font-size: clamp(30px, 5vw, 46px);
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .overlay p { color: rgba(255, 255, 255, .72); margin-bottom: 8px; }
+    .overlay .record { color: var(--accent); min-height: 1.7em; margin-bottom: 36px; }
+    .overlay .btn { background: #fff; padding: 14px 40px; font-size: 15px; }
+    .overlay .btn:hover { background: var(--bg); }
+
+    @media (max-width: 600px) {
+      :root { --gap: 8px; }
+      .wrap { padding-top: 48px; }
+      .status { gap: 8px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="wrap">
+    <div class="eyebrow">Lumo Games</div>
+    <h1>같은 그림 찾기</h1>
+
+    <div class="levels" role="group" aria-label="난이도">
+      <button class="btn ghost" data-level="easy">쉬움 · 4×3</button>
+      <button class="btn ghost" data-level="normal">보통 · 4×4</button>
+      <button class="btn ghost" data-level="hard">어려움 · 6×4</button>
+    </div>
+
+    <div class="status">
+      <span>이동<b id="moves">0</b></span>
+      <span>시간<b id="time">00:00</b></span>
+      <span>최고 기록<b id="best">—</b></span>
+      <button class="btn ghost" id="restart">다시 시작</button>
+    </div>
+
+    <div class="board" id="board" aria-live="polite"></div>
+  </main>
+
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="done-title">
+    <div>
+      <div class="eyebrow">Complete</div>
+      <h2 id="done-title">모두 찾았어요</h2>
+      <p id="result"></p>
+      <p class="record" id="record"></p>
+      <button class="btn" id="again">다시 하기</button>
+    </div>
+  </div>
+
+  <script>
+    const LEVELS = {
+      easy:   { cols: 4, pairs: 6 },
+      normal: { cols: 4, pairs: 8 },
+      hard:   { cols: 6, pairs: 12 }
+    };
+    const EMOJIS = [
+      ['🍋', '레몬'], ['🌿', '허브'], ['☕', '커피'], ['📚', '책'],
+      ['🕯️', '촛불'], ['🌙', '달'], ['🍂', '낙엽'], ['🎧', '헤드폰'],
+      ['🪴', '화분'], ['✉️', '편지'], ['🧺', '바구니'], ['🍞', '빵'],
+      ['🌷', '튤립'], ['🫖', '찻주전자']
+    ];
+
+    const $ = id => document.getElementById(id);
+    const board = $('board');
+
+    let level = 'normal';
+    let first = null, second = null, lock = false;
+    let moves = 0, matched = 0, seconds = 0, timer = null, hideTimeout = null;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function fmt(s) {
+      return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    }
+
+    function loadBest() {
+      try { return JSON.parse(localStorage.getItem('lumo-memory-best-' + level)); } catch { return null; }
+    }
+    function saveBest(rec) {
+      try { localStorage.setItem('lumo-memory-best-' + level, JSON.stringify(rec)); } catch {}
+    }
+    function renderBest() {
+      const b = loadBest();
+      $('best').textContent = b ? `${b.moves}회 · ${fmt(b.time)}` : '—';
+    }
+
+    function stopTimer() { clearInterval(timer); timer = null; }
+
+    function newGame() {
+      stopTimer();
+      clearTimeout(hideTimeout);
+      first = second = null; lock = false;
+      moves = matched = seconds = 0;
+      $('moves').textContent = '0';
+      $('time').textContent = '00:00';
+      $('overlay').classList.remove('show');
+      renderBest();
+
+      document.querySelectorAll('[data-level]').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.dataset.level === level)));
+
+      const { cols, pairs } = LEVELS[level];
+      const picks = shuffle(EMOJIS.slice()).slice(0, pairs);
+      const deck = shuffle(picks.concat(picks));
+
+      board.style.setProperty('--cols', cols);
+      board.innerHTML = '';
+      deck.forEach(([emoji, name], i) => {
+        const card = document.createElement('button');
+        card.className = 'card';
+        card.dataset.emoji = emoji;
+        card.dataset.name = name;
+        card.dataset.index = i + 1;
+        card.setAttribute('aria-label', `카드 ${i + 1}`);
+        card.innerHTML = `<span class="inner"><span class="face back">L</span><span class="face front">${emoji}</span></span>`;
+        card.addEventListener('click', () => flip(card));
+        board.appendChild(card);
+      });
+    }
+
+    function reveal(card, on) {
+      card.classList.toggle('flipped', on);
+      card.setAttribute('aria-label', on ? card.dataset.name : `카드 ${card.dataset.index}`);
+    }
+
+    function flip(card) {
+      if (lock || card === first || card.classList.contains('matched')) return;
+      if (!timer) {
+        timer = setInterval(() => { seconds++; $('time').textContent = fmt(seconds); }, 1000);
+      }
+      reveal(card, true);
+
+      if (!first) { first = card; return; }
+      second = card;
+      moves++;
+      $('moves').textContent = moves;
+
+      if (first.dataset.emoji === second.dataset.emoji) {
+        first.classList.add('matched');
+        second.classList.add('matched');
+        first.disabled = second.disabled = true;
+        first = second = null;
+        matched++;
+        if (matched === LEVELS[level].pairs) finish();
+      } else {
+        lock = true;
+        hideTimeout = setTimeout(() => {
+          reveal(first, false);
+          reveal(second, false);
+          first = second = null;
+          lock = false;
+        }, 800);
+      }
+    }
+
+    function finish() {
+      stopTimer();
+      const best = loadBest();
+      const isRecord = !best || moves < best.moves || (moves === best.moves && seconds < best.time);
+      if (isRecord) saveBest({ moves, time: seconds });
+      renderBest();
+      $('result').textContent = `${moves}번 만에 ${fmt(seconds)} 걸렸어요.`;
+      $('record').textContent = isRecord ? '새로운 최고 기록이에요 ✨' : `최고 기록 ${best.moves}회 · ${fmt(best.time)}`;
+      setTimeout(() => { $('overlay').classList.add('show'); $('again').focus(); }, 500);
+    }
+
+    document.querySelectorAll('[data-level]').forEach(b =>
+      b.addEventListener('click', () => { level = b.dataset.level; newGame(); }));
+    $('restart').addEventListener('click', newGame);
+    $('again').addEventListener('click', newGame);
+
+    newGame();
+  </script>
+</body>
+</html>
